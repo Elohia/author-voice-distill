@@ -58,9 +58,10 @@ python scripts/voice_stats.py 作者A/ --compare 作者B/ [--json diff.json]
 
 ```
 author-voice-distill/
-├── SKILL.md                 # 主流程：五阶段 + 铁律 + 验收判据
+├── SKILL.md                 # 主流程：五阶段 + 八条铁律 + 验收判据
 ├── references/
-│   └── 访谈与追问.md         # 访谈题库与追问范例（按需加载）
+│   ├── 访谈与追问.md         # 访谈题库与追问范例（按需加载）
+│   └── 去AI味规则库.md        # 减法层接口：指纹分类学 / 误伤豁免表 / 仲裁规则
 └── scripts/
     └── voice_stats.py       # 语料风格实测器（句长/标点/节奏，纯统计不改写）
 ```
@@ -69,12 +70,25 @@ author-voice-distill/
 
 | 想要什么 | 用哪个 |
 |---|---|
-| 去掉通用 AI 指纹（减法） | humanizer / humanizer-zh / dbs-ai-check |
 | **让文字像某个具体的人（加法）** | **本 skill** |
-| 诊断某段文字有没有 AI 味 | dbs-ai-check |
+| 去掉通用 AI 指纹（减法） | humanizer-zh（中）/ humanizer（英）/ lieflat-less-ai-tone（白名单式） |
+| 诊断某段文字有没有 AI 味 | dbs-ai-check（默认只诊断不改写） |
+| 保真修补 / 只标问题 | shuorenhua / no-ai-slop |
+| 长文多层缺陷深度修补 | de-AI-writing（叙事→篇章→句式→词表四遍） |
 
-**推荐顺序**：先本 skill 建 voice-profile → 写作时注入 → 再做减法 → 最后盲测验收。
-反过来（先减法后加法）会失败：减法阶段删掉的，可能正是作者的个人特征。
+完整路由表、指纹分类学、误伤豁免表与仲裁规则见 [references/去AI味规则库.md](references/去AI味规则库.md)。
+
+**推荐顺序（三明治）**：加法定调（注入 voice-profile，每篇 3–5 个签名动作）→ 减法清指纹（带豁免表跑）→ 兜底快查 → 盲测验收。
+减法必须在 voice-profile 监督下跑：减法删掉的，可能正是作者的个人特征；只减不加得到的是「第二种 AI 味」。冲突时风格档案一票否决。
+
+## 与 AI 痕迹规避生态的整合
+
+本 skill 不重复造检测轮子，而是把十个减法系 skill（humanizer / humanizer-zh / lieflat-less-ai-tone / dbs-ai-check / no-ai-slop / shuorenhua / stop-slop / rossmann-no-ai-slop / de-AI-writing / good-writing）整合成一个**受作者档案监督的减法层**：
+
+- **指纹分类学**：篇章 / 句式 / 词表 / 标点排版 / 翻译腔 / 中文特有，六层合并去重
+- **误伤豁免表**：句长参差、同构排比、问句、比喻独立成段、被字句……实测站不住的特征一律不作改写理由
+- **仲裁规则**：成簇是指纹、单次是作者声；风格文档一票否决；禁止换词逃逸；加法不得复辟；完美是另一种不真实
+- **验收口径**：检测器只出证据，盲测才是判决
 
 ## License
 
